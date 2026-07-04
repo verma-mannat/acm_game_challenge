@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <title>Brick Breaker</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <style>
   body {
     background: #111;
@@ -17,6 +18,13 @@
     background: #000;
     border: 3px solid #0ff;
     margin-top: 10px;
+    max-width: 95vw;
+    height: auto;
+    touch-action: none;
+  }
+  body {
+    padding: 10px;
+    box-sizing: border-box;
   }
   #info {
     margin-top: 10px;
@@ -95,6 +103,15 @@ for (let c = 0; c < brickColumnCount; c++) {
     bricks[c][r] = { x: 0, y: 0, status: 1 };
   }
 }
+// Make canvas responsive to small screens
+function resizeCanvas() {
+  const maxWidth = Math.min(480, window.innerWidth * 0.95);
+  const scaleFactor = maxWidth / 480;
+  canvas.style.width = maxWidth + "px";
+  canvas.style.height = (400 * scaleFactor) + "px";
+}
+resizeCanvas();
+window.addEventListener("resize", resizeCanvas);
 
 document.addEventListener("keydown", keyDownHandler);
 document.addEventListener("keyup", keyUpHandler);
@@ -114,6 +131,23 @@ function keyUpHandler(e) {
   } else if (e.key === "Left" || e.key === "ArrowLeft") {
     leftPressed = false;
   }
+}
+// Touch controls for mobile
+canvas.addEventListener("touchstart", touchHandler, { passive: false });
+canvas.addEventListener("touchmove", touchHandler, { passive: false });
+
+function touchHandler(e) {
+  e.preventDefault(); // stop scrolling/zooming while playing
+  const rect = canvas.getBoundingClientRect();
+  const touchX = e.touches[0].clientX - rect.left;
+  // scale touch position to canvas internal coordinates
+  const scale = canvas.width / rect.width;
+  const scaledX = touchX * scale;
+  paddleX = scaledX - paddleWidth / 2;
+
+  // keep paddle inside canvas bounds
+  if (paddleX < 0) paddleX = 0;
+  if (paddleX > canvas.width - paddleWidth) paddleX = canvas.width - paddleWidth;
 }
 
 function collisionDetection() {
